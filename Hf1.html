@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>WC22QH Hazi1</title>
+
+</head>
+<body>
+<html>
+WC22QH Multimédia Házi feladat.<br>
+Játéktér generáláshoz kattints! <br>
+
+Készítsd el az alábbi programot!<br>
+
+
+A játéktérben hozz létre egy NxM-es div mátrixot ciklussal.<br>
+
+Bizonyos mezők legyenek ládák, melyek vagy kincset vagy szörnyet vagy semmit sem rejtenek. Tehát 33% eséllyel tartalmaz a láda mező valamit.<br>
+
+Akkor derüljön ki, hogy mi van a ládában (tehát akkor cserélődjön ki a képe), ha ráléptünk a mezőre.<br>
+
+
+A mezők színei:<br>
+
+- az alap mezők fehérek;
+
+- a láda barna;
+
+- a kincs sárga;
+
+- a szörny zöld;
+- a semmi szürke<br>
+
+
+</html>
+<canvas id="Canvas" height="800px" width="1200px" style="border: 2px solid black; background-color: lightblue;"></canvas>
+
+
+
+<script>
+    let c = document.getElementById("Canvas");
+    let ctx = c.getContext("2d");
+    let chestSpawnRate=10;
+    /*
+     Készítsd el az alábbi programot!
+
+     A játéktérben hozz létre egy NxM-es div mátrixot ciklussal.
+     Bizonyos mezők legyenek ládák, melyek vagy kincset vagy szörnyet vagy semmit sem rejtenek. Tehát 33% eséllyel tartalmaz a láda mező valamit.
+     Akkor derüljön ki, hogy mi van a ládában (tehát akkor cserélődjön ki a képe), ha ráléptünk a mezőre.
+
+     A mezők színei:
+     - az alap mezők fehérek
+     - a láda barna
+     - a kincs sárga
+     - a szörny zöld
+     - a semmi szürke
+     * */
+
+
+
+    class tile {
+        constructor()
+        {
+            this.x=50,
+            this.y=50,
+            this.color="white",
+            this.chest= false,
+            this.rcolor="white",
+            this.id=0
+        }
+
+    } //a pálány a kockák adatainak mentése
+
+
+
+    const tiles = []; //kocka tároló tönb
+
+    let firstpass = true; //egy bool hogy ne generáljak minden kattintáskor
+
+    function tiledrawer() //ez generálja a páját, && rajzolja ki.
+    {
+        let rows =0; //segédváltozó
+        for(let i=0; i< 384; ++i)
+        {
+            tiles[i] = new tile;
+            tiles[i].id=i;
+            //console.log(`${i} tile id: ${tiles[i].id}`);
+            let rand = Math.floor( Math.random()*100);
+
+            // console.log("rand: "+rand);
+            if(rand < chestSpawnRate) //ládák random generálása
+            {
+                // console.log("randd: "+rand);
+                tiles[i].chest=true;
+                tiles[i].color="#900C3F";
+                rand = Math.floor( Math.random()*101);
+                if(rand < 33)//szörny
+                {
+                    tiles[i].rcolor="green";
+                }
+                else if(rand > 33 && rand <66)//money
+                {
+                    tiles[i].rcolor="yellow";
+                }
+                else //semmi
+                {
+                    tiles[i].rcolor="gray";
+                }
+
+            }
+            else //alap tile
+            {
+                tiles[i].chest=false;
+                tiles[i].color="white";
+                tiles[i].rcolor="white";
+            }
+            //rajz
+            ctx.fillStyle = tiles[i].color;
+
+            ctx.beginPath();
+
+            if(i%24==0)
+            {
+
+                if(!firstpass)
+                {
+                    rows++;//megmondja hanyadik sorba kell tenni
+                    //    console.log(rows);
+                }
+                firstpass=false;
+            }
+            tiles[i].x = (i%24)*50; //tile helyének mentése
+            tiles[i].y =rows*50;  //tile helyének mentése
+
+
+            ctx.fillRect(tiles[i].x,tiles[i].y,50,50);
+            ctx.stroke;
+
+        }
+
+    }
+
+
+
+    var drawn=false;
+
+    function CharMove(ev)
+    {
+        let rect = c.getBoundingClientRect();
+        let mouseX = ev.clientX;
+        let mouseY = ev.clientY;
+
+        if(mouseX > 0 && mouseX <c.width)
+        {
+           // console.log("x: "+ mouseX%50 + ", Y: " + ev.clientY%50);
+            if(!drawn)
+            {
+                tiledrawer();
+                drawn=true;
+
+            }
+
+            let TileX = Math.trunc(mouseX/50)+1;  //segédváltozó, igazából csak magamnak csináltam, hogy nézzem hová kattintok
+         //   console.log(TileRow+"RAWW");
+            let TileY = Math.trunc(mouseY/50)-2; //segédváltozó, igazából csak magamnak csináltam, hogy nézzem hová kattintok
+          //  console.log(TileX+" "+ TileY);
+                            //a +1 -2 azért kell, mert a canvas felett van szöveg, ez offseteli.
+
+
+            let Block_id = (TileY-1)*24+(TileX-1); //matek arra hogy hol van a láda
+           // console.log("Block_ID:" + Block_id);
+
+
+            for(let counter = 0; counter <tiles.length; ++counter) //a ládák végig iterálása, hogy hová kattintottunk. ettől lassú néha.
+            {
+
+                if(tiles[counter].id==Block_id) //csak ládát rajzolok újra
+                {
+
+                   // console.log(Block_id + " Counter id: "+ tiles[counter].id)
+                 //   console.log(tiles[counter]);
+                    ctx.fillStyle = tiles[counter].rcolor;
+                    ctx.beginPath();
+                    ctx.fillRect(tiles[counter].x,tiles[counter].y,50,50);
+                    //console.log(tiles[counter])
+                    ctx.stroke; //újrarajzolása a kinyitott ládáknak
+
+                }
+
+            }
+        }
+    }
+
+
+
+
+
+
+    //mouse event listener
+    window.addEventListener('mousedown', CharMove, 'false'); //onclick event inicializálása
+
+
+
+
+
+
+
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WC22QH Kötprog</title>
+</head>
+<body>
+<canvas id="Canvas" height="400px" width="700px" style="border: 2px solid black; background-color: lightblue;"></canvas>
+    <script>
+
+
+        let map="map1";
+        const map1_enemies = [];
+        const map2_enemies = [];
+        let map2_init = false;
+        const map3_enemies=[];
+        let map3_init=false;
+        var imgd;
+        var bounty = false;
+        var is_player = false;
+
+
+
+        class player
+        {
+            constructor()
+            {
+                this.x=40;
+                this.y=60;
+                this.Hei=15;
+                this.Wid=15;
+                this.color="yellow";
+                this.deathcounter=0;
+            }
+        };
+
+        class enemy
+        {
+            constructor()
+            {
+            this.x=40;
+            this.y=60;
+            this.rad=8;
+            this.color="red";
+            this.vector="+";
+            this.vector2="+";
+            }
+        }
+
+    let c = document.getElementById("Canvas");
+    let ctx = c.getContext("2d");
+    var  PLAYER = new player();
+
+        function initmap2player()
+        {
+            PLAYER.x=100;
+            PLAYER.y=100;
+        }
+
+        function map1()
+        {
+
+
+
+            ctx.beginPath();
+
+            //háttér újra beállítása
+            ctx.fillStyle = "lightblue";
+            ctx.fillRect(0, 0, Canvas.width, Canvas.height);
+
+
+            ctx.fillStyle = "green";
+            ctx.fillRect(10, 50, 70, 140);//bal zöld
+            ctx.fillStyle = ("gray");
+            ctx.fillRect(80, 165, 80, 25);//átjáró
+            ctx.fillRect(130, 40, 350, 125);//játéktér
+            /*
+            a játéktér 350 széles és 180 hosszú
+            130-nál kezdődik
+            40 magasan
+             */
+
+
+
+            ctx.fillRect(450, 15, 80, 25); //átjáró2
+            ctx.fillStyle = "lightgreen";
+            ctx.fillRect(530, 15, 100, 100);// pája vége
+
+            ctx.fillStyle="yellow";
+            ctx.stroke();
+
+            //JÁTKOS
+            ctx.fillRect(PLAYER.x, PLAYER.y, PLAYER.Hei, PLAYER.Wid );
+            ctx.stroke();
+
+            //ELLENSÉGEK!
+            for(let i=0; i<4 ;++i)
+            {
+                ctx.beginPath();
+                ctx.fillStyle=map1_enemies[i].color;
+                ctx.arc(map1_enemies[i].x, map1_enemies[i].y,map1_enemies[i].rad,0,2*Math.PI);
+                ctx.fill();
+            }
+            imgd=ctx.getImageData(PLAYER.x-1, PLAYER.y-1, 1, 1);
+
+            if((imgd.data[0]==144 && imgd.data[1]==238 && imgd.data[2]==144))
+            {
+                map="map2";
+                initmap2player();
+                Map2_enemies_init()
+                map2_init = true;
+            }
+
+
+
+
+        }
+        let Initmap1 = false;
+        function Map_enemies_init()
+        {
+            //140 a vége
+            //470 a jobb oldalon
+
+            map1_enemies[0] = new enemy(); //felső
+            map1_enemies[0].x=300;
+            map1_enemies[0].y=60;
+
+            map1_enemies[1] = new enemy();
+            map1_enemies[1].x=300;
+            map1_enemies[1].y=90;
+            map1_enemies[1].vector="-";
+
+            map1_enemies[2] = new enemy();
+            map1_enemies[2].x = 300;
+            map1_enemies[2].y = 120;
+
+            map1_enemies[3] = new enemy();
+            map1_enemies[3].x = 300;
+            map1_enemies[3].y = 150;
+            map1_enemies[3].vector = "-";
+            Initmap1=true;
+
+
+        }
+        function fmap1_enemies()
+        {
+            if(!Initmap1)
+            {
+                Map_enemies_init();
+            }
+            map1collider();
+            for(let i=0; i<4;++i)
+            {
+                if(map1_enemies[i].vector=="+" && map1_enemies[i].x<=464)
+                {
+                    map1_enemies[i].x += 4;
+
+                }
+                if(map1_enemies[i].vector=="-" && map1_enemies[i].x>=146)
+                {
+                    map1_enemies[i].x -= 4;
+                }
+
+                if(map1_enemies[i].x>454)
+                {
+                    map1_enemies[i].vector="-";
+                } else if( map1_enemies[i].x<=156)
+                {
+                    map1_enemies[i].vector="+";
+                }
+
+
+            }
+
+
+        }
+
+        function CharMove(e)
+        {
+            let key = e.which;
+            if(key == 39) //jobbra
+            {
+                imgd=ctx.getImageData(PLAYER.x+16, PLAYER.y, 1, 1);
+                if(!(imgd.data[0]==173 && imgd.data[1]==216 && imgd.data[2]==230))
+                {
+                    PLAYER.x = PLAYER.x + 8;
+                }
+            }
+            else if (key ==37) //balra
+            {
+                imgd=ctx.getImageData(PLAYER.x-2, PLAYER.y, 1, 1);
+                if(!(imgd.data[0]==173 && imgd.data[1]==216 && imgd.data[2]==230))
+                {
+                    PLAYER.x = PLAYER.x - 8;
+                }
+            }
+            else if(key == 38)//felfelé
+            {
+                imgd=ctx.getImageData(PLAYER.x, PLAYER.y-3, 1, 1);
+                if(!(imgd.data[0]==173 && imgd.data[1]==216 && imgd.data[2]==230))
+                {
+                PLAYER.y-=8;
+                }
+            }
+            else if(key == 40)
+            {
+                imgd=ctx.getImageData(PLAYER.x, PLAYER.y+18, 1, 1);
+                if(!(imgd.data[0]==173 && imgd.data[1]==216 && imgd.data[2]==230))
+                {
+                PLAYER.y+=8;
+                }
+            }
+
+
+
+        };
+
+        function map1collider()
+        {
+
+            for(let i=0; i<4; ++i)
+            {
+                let x_tav = Math.abs(map1_enemies[i].x - PLAYER.x+5);
+                let y_tav = Math.abs(map1_enemies[i].y - PLAYER.y-5);
+
+                if(x_tav < 18 && y_tav <18)
+                {
+                    PLAYER.x=40;
+                    PLAYER.y=60;
+                    PLAYER.deathcounter++;
+                    document.getElementById("Score").innerHTML ="death count: "+ PLAYER.deathcounter;
+                    death();
+                }
+
+
+
+
+            }
+
+        }
+//-----------------------------------------------------------------MAP2----------------
+
+
+
+
+
+        function map2()
+        {
+
+            ctx.beginPath();
+            //háttér újra beállítása
+            ctx.fillStyle = "lightblue";
+            ctx.fillRect(0, 0, Canvas.width, Canvas.height);
+            //játéktér
+            ctx.fillStyle = "green";
+            ctx.fillRect(20, 70, 55, 55);//bal zöld
+
+            ctx.fillStyle = ("gray");
+            ctx.fillRect(75, 20, 350, 150);//játéktér
+            //cél
+
+            ctx.fillStyle = "lightgreen";
+            ctx.fillRect(425, 65, 55, 55);
+            ctx.stroke();
+
+            //JÁTKOS
+            ctx.fillStyle="yellow";
+            ctx.fillRect(PLAYER.x, PLAYER.y, PLAYER.Hei, PLAYER.Wid );
+            ctx.stroke();
+            //ELLENSÉG
+
+            for(let i=0; i<map2_enemies.length; ++i)
+            {
+                ctx.beginPath();
+                ctx.fillStyle=map2_enemies[i].color;
+                ctx.arc(map2_enemies[i].x, map2_enemies[i].y,map2_enemies[i].rad,0,2*Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            imgd=ctx.getImageData(PLAYER.x-1, PLAYER.y-1, 1, 1);
+
+            if((imgd.data[0]==144 && imgd.data[1]==238 && imgd.data[2]==144))
+            {
+                map="map3";
+                PLAYER.x = 250;
+                PLAYER.y = 150;
+            }
+
+        };
+        function Map2_enemies_init()
+        {
+            //map2_enemies
+
+                map2_enemies[0]= new enemy();
+                map2_enemies[0].x=100;
+                map2_enemies[0].y=95;
+                map2_enemies[0].vector="+";
+
+                map2_enemies[1]= new enemy();
+                map2_enemies[1].x=130;
+                map2_enemies[1].y=95;
+                map2_enemies[1].vector="-";
+
+                map2_enemies[2]= new enemy();
+                map2_enemies[2].x=160;
+                map2_enemies[2].y=95;
+                map2_enemies[2].vector="+";
+
+
+
+                map2_enemies[3]= new enemy();
+                map2_enemies[3].x=190;
+                map2_enemies[3].y=95;
+                map2_enemies[3].vector="-";
+
+                map2_enemies[4]= new enemy();
+                map2_enemies[4].x=220;
+                map2_enemies[4].y=95;
+             map2_enemies[4].vector="+";
+
+
+            map2_enemies[5]= new enemy();
+                map2_enemies[5].x=250;
+                map2_enemies[5].y=95;
+                map2_enemies[5].vector="-";
+
+                map2_enemies[6]= new enemy();
+                map2_enemies[6].x=280;
+                map2_enemies[6].y=95;
+            map2_enemies[6].vector="+";
+
+
+            map2_enemies[7]= new enemy();
+                map2_enemies[7].x=310;
+                map2_enemies[7].y=95;
+                map2_enemies[7].vector="-";
+
+                map2_enemies[8]= new enemy();
+                map2_enemies[8].x=340;
+                map2_enemies[8].y=95;
+            map2_enemies[8].vector="+";
+
+
+            map2_enemies[9]= new enemy();
+                map2_enemies[9].x=370;
+                map2_enemies[9].y=95;
+                map2_enemies[9].vector="-";
+
+                map2_enemies[10]= new enemy();
+                map2_enemies[10].x=400;
+                map2_enemies[10].y=95;
+                 map2_enemies[10].vector="+";
+
+
+            map2_init = true;
+
+
+
+        };
+
+        function fmap2_enemies()
+        {
+            if(!map2_init)
+            {
+                Map2_enemies_init();
+                map2_init = true;
+            }
+            map2_collider();
+
+            for(let i=0; i<map2_enemies.length;++i)
+            {
+                if(map2_enemies[i].vector=="+" && map2_enemies[i].y <165)
+                {
+                   map2_enemies[i].y+=1.5;
+                }
+                else if(map2_enemies[i].vector=="-" && map2_enemies[i].y > 30)
+                {
+                    map2_enemies[i].y-=1.5;
+                }
+
+                if(map2_enemies[i].y < 40)
+                {
+                    map2_enemies[i].vector="+";
+                }
+                else if( map2_enemies[i].y > 150)
+                {
+                    map2_enemies[i].vector="-";
+                }
+
+
+
+
+            }
+
+        };
+
+        function map2_collider()
+        {
+            for(let i=0; i<map2_enemies.length;++i)
+            {
+                let x_tav = Math.abs(map2_enemies[i].x - PLAYER.x+5);
+                let y_tav = Math.abs(map2_enemies[i].y - PLAYER.y-5);
+
+                if(x_tav < 15 && y_tav <15)
+                {
+                    PLAYER.x=40;
+                    PLAYER.y=60;
+                    PLAYER.deathcounter++;
+                    document.getElementById("Score").innerHTML ="death count: "+ PLAYER.deathcounter;
+                    death();
+                }
+            }
+        };
+//--------------------------------------------map3--------------------------------------
+        function map3() {
+
+            if (!is_player)
+            {
+                PLAYER.x = 250;
+                PLAYER.y = 150;
+                is_player=true;
+            }
+            ctx.beginPath();
+            //háttér újra beállítása
+            ctx.fillStyle = "lightblue";
+            ctx.fillRect(0, 0, Canvas.width, Canvas.height);
+            //játéktér
+
+            ctx.fillStyle="gray";
+            ctx.fillRect(200, 100, 100,100);
+            ctx.fillRect(200, 75,25,25);
+
+            ctx.fillStyle = "lightgreen";
+            ctx.fillRect(225, 125, 50, 50);//bal zöld
+            ctx.stroke();
+
+            //PLAYER
+            ctx.beginPath();
+            ctx.fillStyle = PLAYER.color;
+            ctx.fillRect(PLAYER.x, PLAYER.y, PLAYER.Hei, PLAYER.Wid);
+
+
+            //enemies
+            for(let i=0; i<map3_enemies.length; ++i)
+            {
+            ctx.beginPath();
+            ctx.fillStyle = map3_enemies[i].color;
+            ctx.arc(map3_enemies[i].x , map3_enemies[i].y , map3_enemies[i].rad , 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            }
+
+
+            imgd=ctx.getImageData(PLAYER.x-1, PLAYER.y-1, 1, 1);
+
+            if((imgd.data[0]==144 && imgd.data[1]==238 && imgd.data[2]==144) && bounty ==true)
+            {
+                map="map4";
+                document.getElementById("fourth").innerHTML="Player: "+PLAYER.deathcounter;
+            }
+
+        };
+        function map3_enemies_init()
+        {
+            map3_enemies[0]=new enemy();
+            map3_enemies[0].x=234;
+            map3_enemies[0].y=116;
+            map3_enemies[0].vector="+"; //x irányú elmozdulás
+            map3_enemies[0].vector2="0"; //y irányú elmozdulás
+
+            map3_enemies[1]=new enemy();
+            map3_enemies[1].x=251;
+            map3_enemies[1].y=116;
+            map3_enemies[1].vector="+"; //x irányú elmozdulás
+            map3_enemies[1].vector2="0"; //y irányú elmozdulás
+
+            map3_enemies[2]=new enemy();
+            map3_enemies[2].x=268;
+            map3_enemies[2].y=116;
+            map3_enemies[2].vector="+"; //x irányú elmozdulás
+            map3_enemies[2].vector2="0"; //y irányú elmozdulás
+
+            map3_enemies[3]=new enemy();
+            map3_enemies[3].x=285;
+            map3_enemies[3].y=116;
+            map3_enemies[3].vector="+"; //x irányú elmozdulás
+            map3_enemies[3].vector2="0"; //y irányú elmozdulás
+//-------------------------------------------------------------- lefelé train
+            map3_enemies[4]=new enemy();
+            map3_enemies[4].x=285;
+            map3_enemies[4].y=134;
+            map3_enemies[4].vector="0"; //x irányú elmozdulás
+            map3_enemies[4].vector2="+"; //y irányú elmozdulás
+
+            map3_enemies[5]=new enemy();
+            map3_enemies[5].x=285;
+            map3_enemies[5].y=152;
+            map3_enemies[5].vector="0"; //x irányú elmozdulás
+            map3_enemies[5].vector2="+"; //y irányú elmozdulás
+
+            map3_enemies[6]=new enemy();
+            map3_enemies[6].x=285;
+            map3_enemies[6].y=170;
+            map3_enemies[6].vector="0"; //x irányú elmozdulás
+            map3_enemies[6].vector2="+";
+
+            map3_enemies[7]=new enemy();
+            map3_enemies[7].x=285;
+            map3_enemies[7].y=188;
+            map3_enemies[7].vector="0"; //x irányú elmozdulás
+            map3_enemies[7].vector2="+";
+//--------------------------------------------------- balra train
+
+            map3_enemies[8]=new enemy();
+            map3_enemies[8].x=267;
+            map3_enemies[8].y=188;
+            map3_enemies[8].vector="-"; //x irányú elmozdulás
+            map3_enemies[8].vector2="0";
+
+            map3_enemies[9]=new enemy();
+            map3_enemies[9].x=249;
+            map3_enemies[9].y=188;
+            map3_enemies[9].vector="-"; //x irányú elmozdulás
+            map3_enemies[9].vector2="0";
+
+            map3_enemies[10]=new enemy();
+            map3_enemies[10].x=231;
+            map3_enemies[10].y=188;
+            map3_enemies[10].vector="-"; //x irányú elmozdulás
+            map3_enemies[10].vector2="0";
+
+            map3_enemies[11]=new enemy();
+            map3_enemies[11].x=213;
+            map3_enemies[11].y=188;
+            map3_enemies[11].vector="-"; //x irányú elmozdulás
+            map3_enemies[11].vector2="0";
+///---------------------felfelé!
+            map3_enemies[12]=new enemy();
+            map3_enemies[12].x=213;
+            map3_enemies[12].y=170;
+            map3_enemies[12].vector="0"; //x irányú elmozdulás
+            map3_enemies[12].vector2="-";
+
+            map3_enemies[13]=new enemy();
+            map3_enemies[13].x=213;
+            map3_enemies[13].y=152;
+            map3_enemies[13].vector="0"; //x irányú elmozdulás
+            map3_enemies[13].vector2="-";
+//--------------FLAG!!------------------
+            map3_enemies[14]=new enemy();
+            map3_enemies[14].color="black";
+            map3_enemies[14].x=210;
+            map3_enemies[14].y=85;
+            map3_enemies[14].vector="0"; //x irányú elmozdulás
+            map3_enemies[14].vector2="0";
+
+
+
+
+
+
+
+            map3_init = true;
+
+
+        };
+        function fmap3_enemies()
+        {
+            if(!map3_init)
+            {
+                map3_enemies_init();
+
+                console.log("map3inited");
+            }
+            map3_collider();
+            for(let i=0; i<map3_enemies.length; ++i)
+            {
+                if(map3_enemies[i].vector=="+" && map3_enemies[i].x < 282)//balra
+                {
+                    map3_enemies[i].x+=1;
+                }
+
+                if(map3_enemies[i].vector2=="+"  )//le
+                {
+                    map3_enemies[i].y+=1;
+                }
+
+                if(map3_enemies[i].vector=="-" && map3_enemies[i].x >209)//jobbera
+                {
+                    map3_enemies[i].x-=1;
+                }
+
+                if(map3_enemies[i].vector2=="-" && map3_enemies[i].y > 115 )
+                {
+                    map3_enemies[i].y-=1;
+                }
+
+
+
+                if(map3_enemies[i].vector=="+" && map3_enemies[i].x > 281)//balra_stopp majd le
+                {
+                    map3_enemies[i].vector="0";
+                    map3_enemies[i].vector2="+";
+                }
+                if(map3_enemies[i].vector2=="+" && map3_enemies[i].y > 182)//le_stopp majd balra
+                {
+                    map3_enemies[i].vector2="0";
+                    map3_enemies[i].vector="-";
+                }
+
+                if(map3_enemies[i].vector=="-" && map3_enemies[i].x < 210) //balra stopp majd fel
+                {
+                    map3_enemies[i].vector="0";
+                    map3_enemies[i].vector2="-";
+                }
+
+                if(map3_enemies[i].vector2=="-" && map3_enemies[i].y < 116 )
+                {
+                    map3_enemies[i].vector2="0";
+                    map3_enemies[i].vector="+";
+                }
+
+
+            }
+
+
+        };
+        function map3_collider()
+        {
+
+            for(let i=0; i<map3_enemies.length;++i)
+            {
+                let x_tav = Math.abs(map3_enemies[i].x - PLAYER.x+5);
+                let y_tav = Math.abs(map3_enemies[i].y - PLAYER.y-5);
+
+
+
+                if(x_tav < 10 && y_tav <10 && map3_enemies[i].color=="black")
+                {
+                    bounty=true;
+                    map3_enemies[i].color="gray"
+                }
+                else if(x_tav < 10 && y_tav <10 && map3_enemies[i].color=="red")
+                {
+                    PLAYER.x=250;
+                    PLAYER.y=150;
+                    PLAYER.deathcounter++;
+                    document.getElementById("Score").innerHTML ="death count: "+ PLAYER.deathcounter;
+                    death();
+
+                }
+            }
+
+        };
+
+//------------------frame timer
+
+        var myVar = setInterval(drawframe, 16);
+
+
+
+        function drawframe() {
+
+
+            if (map == "map1") {
+
+                fmap1_enemies();
+                map1();
+            }
+
+            else if (map == "map2") {
+                fmap2_enemies();
+                map2();
+            }
+            else if (map == "map3")
+            {
+                fmap3_enemies();
+                map3();
+            }
+        }
+
+
+
+
+        window.addEventListener('keydown', CharMove, 'false'); //onclick event inicializálása
+
+        //sound
+
+
+
+        function play()
+        {
+
+            let audio = new Audio("DOOM.mp3");
+            audio.volume=0.2;
+            audio.play();
+
+        }
+        function death()
+        {
+             let audio = new Audio("OOF.mp3");
+                audio.play();
+        }
+
+    </script>
+
+    <p id=Score>death count: 0</p>
+
+<button onclick="play();">DOOM</button>
+
+<form >
+    <label for="fname">Szöveges Mező</label>
+    <input type="Szöveges Mező" id="fname" name="fname"><br><br>
+
+</form>
+
+<div id="leaderboaard">
+    Leaderboard:<br>
+    <div id="first">Bob: 0</div>
+    <div id="second">Fred: 1</div>
+    <div id="third">Jack: 2</div>
+    <div id ="fourth"></div>
+</div>
+
+
+
+</body>
+</html>
