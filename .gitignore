@@ -1,6 +1,5 @@
 
-+*.zip
-+*.mp3
-+idea
-+doom
-.idea/workspace.xml
+*.zip
+*.mp3
+idea
+doom
